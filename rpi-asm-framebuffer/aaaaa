@@ -1,0 +1,122 @@
+
+.equ SCREEN_WIDTH, 		640  //X
+.equ SCREEN_HEIGH, 		480  //Y
+.equ BITS_PER_PIXEL,  	32
+
+
+.globl main
+main:
+	// X0 contiene la direccion base del framebuffer
+ 	mov x20, x0	// Save framebuffer base address to x20	
+	//---------------- CODE HERE ------------------------------------
+	// WHITE
+	mov w10, #0xFFFFFF
+	// PINK
+	mov w11, #0x22
+	movk w11, 0x1150, lsl 16
+	//GREY
+	mov w12, #0x7788
+	movk w12, 0x77, lsl 16
+
+
+	mov x2, SCREEN_HEIGH         // Y Size
+	mov x5, 480					// sky box
+
+
+
+resetSky:
+	mov x1, SCREEN_WIDTH         // X Size
+	mov x2, SCREEN_HEIGH
+	add x0, x0, 2000
+
+sky:
+	stur w10,[x0]
+	add x0,x0, 128
+	sub x1,x1,64
+	cbnz x1,sky
+	sub x5, x5, 1
+	cbz x5, setFloor
+	sub x2, x2, 48
+	cbnz x2, resetSky
+
+setFloor:
+	mov x0, x20
+	mov x6, xzr			// We are gonna use the x6 variable to calculate the direction of the framebuffer
+	mov x7, #300		// Y value
+	mov x9, SCREEN_WIDTH 
+	madd x6, x7, x9, x9
+	lsl x6, x6, 2
+	add x0, x20, x6
+	mov x5, 800					// Floor box
+
+resetFloor:
+	mov x1, SCREEN_WIDTH         // X Size
+	mov x2, SCREEN_HEIGH
+
+floor:
+	stur w11,[x0]
+	add x0,x0, 4
+	sub x1,x1,1
+	cbnz x1,floor
+	sub x5, x5, 1
+	cbz x5, setSunPosition
+	sub x2, x2, 1
+	cbnz x2, resetFloor
+
+setSunPosition:
+	// Move the framebuffer to an specific location to draw a road
+	mov x0, x20
+	mov x6, xzr			// We are gonna use the x6 variable to calculate the direction of the framebuffer
+	mov x7, #100		// Y value
+	mov x8, #280		// X value
+	mov x9, SCREEN_WIDTH 
+	madd x6, x7, x9, x8
+	lsl x6, x6, 2
+	add x0, x20, x6
+	mov x12, #16
+	mov x1, x12
+	b sun
+
+reset:
+	add x12, x12, 1
+	cmp x12, #32
+	b.eq exit
+	mov x6, xzr
+	add x7, x7, 1		// Y value
+	sub x8, x8, 2		// X value
+	madd x6, x7, x9, x8
+	lsl x6, x6, 2
+	add x0, x20, x6
+
+	lsl x1, x12, 2
+	b sun
+
+sun:
+	stur w11,[x0]
+	add x0,x0, 4
+
+	sub x1,x1,1
+	cbnz x1, sun
+	b reset
+
+reset1:
+	add x12, x12, 1
+	cmp x12, #40
+	b.eq exit
+	mov x6, xzr
+	add x7, x7, 1		// Y value
+	madd x6, x7, x9, x8
+	lsl x6, x6, 2
+	add x0, x20, x6
+	mov x1, x
+	b plan
+
+plan:
+	stur w10,[x0]
+	add x0,x0, 4
+	sub x1,x1,1
+	cbnz x1,exit
+	sub x2, x2, 1
+	cbnz x2, reset1
+
+exit:

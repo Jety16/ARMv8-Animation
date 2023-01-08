@@ -1,0 +1,75 @@
+
+Configuración de la Memoria
+
+Nombre           Origen             Longitud           Atributos
+*default*        0x0000000000000000 0xffffffffffffffff
+
+Guión del enlazador y mapa de memoria
+
+LOAD app.o
+LOAD start.o
+                0x0000000000080000                . = 0x80000
+
+.text           0x0000000000080000    0x90ce8
+ *(.text.boot)
+ .text.boot     0x0000000000080000    0x100c8 start.o
+                0x0000000000080000                _start
+ *(.text*)
+ .text          0x00000000000900c8      0xc20 app.o
+                0x00000000000900c8                main
+ .text          0x0000000000090ce8    0x80000 start.o
+
+.iplt           0x0000000000110ce8        0x0
+ .iplt          0x0000000000110ce8        0x0 start.o
+
+.rela.dyn       0x0000000000110ce8        0x0
+ .rela.iplt     0x0000000000110ce8        0x0 start.o
+ .rela.text.boot
+                0x0000000000110ce8        0x0 start.o
+
+.data           0x0000000000110ce8        0x0
+ .data          0x0000000000110ce8        0x0 app.o
+ .data          0x0000000000110ce8        0x0 start.o
+
+.igot.plt       0x0000000000110ce8        0x0
+ .igot.plt      0x0000000000110ce8        0x0 start.o
+
+.bss            0x0000000000110ce8        0x0
+ *(.bss*)
+ .bss           0x0000000000110ce8        0x0 app.o
+ .bss           0x0000000000110ce8        0x0 start.o
+
+.bss            0x0000000000110ce8        0x8
+                0x0000000000110cf0                . = ALIGN (0x10)
+ *fill*         0x0000000000110ce8        0x8 
+                0x0000000000110cf0                __bss_start = .
+ *(.bss .bss.*)
+ *(COMMON)
+                0x0000000000110cf0                __bss_end = .
+                0x0000000000110cf0                _end = .
+                0x0000000000000000                __bss_size = ((__bss_end - __bss_start) >> 0x3)
+OUTPUT(kernel8.elf elf64-littleaarch64)
+LOAD linker stubs
+
+.debug_line     0x0000000000000000      0x394
+ .debug_line    0x0000000000000000      0x341 app.o
+ .debug_line    0x0000000000000341       0x53 start.o
+
+.debug_info     0x0000000000000000       0x5c
+ .debug_info    0x0000000000000000       0x2e app.o
+ .debug_info    0x000000000000002e       0x2e start.o
+
+.debug_abbrev   0x0000000000000000       0x28
+ .debug_abbrev  0x0000000000000000       0x14 app.o
+ .debug_abbrev  0x0000000000000014       0x14 start.o
+
+.debug_aranges  0x0000000000000000       0x60
+ .debug_aranges
+                0x0000000000000000       0x30 app.o
+ .debug_aranges
+                0x0000000000000030       0x30 start.o
+
+.debug_str      0x0000000000000000       0x67
+ .debug_str     0x0000000000000000       0x5f app.o
+ .debug_str     0x000000000000005f        0x8 start.o
+                                         0x61 (tamaño antes de la relajación)
